@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model addresses {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  address_line1 String    @db.VarChar(255)
+  address_line2 String?   @db.VarChar(255)
+  city          String    @db.VarChar(100)
+  state         String?   @db.VarChar(100)
+  postal_code   String?   @db.VarChar(20)
+  is_default    Boolean?  @default(false)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @default(now()) @db.Timestamp(0)
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "addresses_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model categories {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(50)
+  description String?      @db.Text
+  image_url   String?      @db.VarChar(255)
+  created_at  DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at  DateTime?    @default(now()) @db.Timestamp(0)
+  menu_items  menu_items[]
+}
+
+model driver_info {
+  id            Int     @id @default(autoincrement())
+  user_id       Int?    @unique(map: "user_id")
+  vehicle_type  String? @db.VarChar(50)
+  license_plate String? @db.VarChar(20)
+  users         users?  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "driver_info_ibfk_1")
+}
+
+model menu_items {
+  id            Int           @id @default(autoincrement())
+  restaurant_id Int?
+  name          String        @db.VarChar(100)
+  description   String?       @db.Text
+  price         Decimal       @db.Decimal(10, 2)
+  image_url     String?       @db.VarChar(255)
+  is_available  Boolean?      @default(true)
+  category_id   Int?
+  created_at    DateTime?     @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?     @default(now()) @db.Timestamp(0)
+  restaurants   restaurants?  @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "menu_items_ibfk_1")
+  categories    categories?   @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "menu_items_ibfk_2")
+  order_items   order_items[]
+
+  @@index([category_id], map: "category_id")
+  @@index([restaurant_id], map: "restaurant_id")
+}
+
+model order_items {
+  id           Int         @id @default(autoincrement())
+  order_id     Int?
+  menu_item_id Int?
+  quantity     Int
+  price        Decimal     @db.Decimal(10, 2)
+  subtotal     Decimal     @db.Decimal(10, 2)
+  created_at   DateTime?   @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?   @default(now()) @db.Timestamp(0)
+  orders       orders?     @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_items_ibfk_1")
+  menu_items   menu_items? @relation(fields: [menu_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_items_ibfk_2")
+
+  @@index([menu_item_id], map: "menu_item_id")
+  @@index([order_id], map: "order_id")
+}
+
+model orders {
+  id               Int            @id @default(autoincrement())
+  user_id          Int?
+  restaurant_id    Int?
+  total_amount     Decimal        @db.Decimal(10, 2)
+  status           orders_status? @default(pending)
+  delivery_address String         @db.VarChar(255)
+  payment_method   String?        @db.VarChar(50)
+  created_at       DateTime?      @default(now()) @db.Timestamp(0)
+  updated_at       DateTime?      @default(now()) @db.Timestamp(0)
+  order_items      order_items[]
+  users            users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_1")
+  restaurants      restaurants?   @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_2")
+
+  @@index([restaurant_id], map: "restaurant_id")
+  @@index([user_id], map: "user_id")
+}
+
+model restaurant_info {
+  id              Int     @id @default(autoincrement())
+  user_id         Int?    @unique(map: "user_id")
+  restaurant_name String  @db.VarChar(100)
+  cuisine_type    String? @db.VarChar(50)
+  opening_hours   String? @db.VarChar(100)
+  users           users?  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "restaurant_info_ibfk_1")
+}
+
+model restaurants {
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(100)
+  description   String?      @db.Text
+  address       String       @db.VarChar(255)
+  phone_number  String?      @db.VarChar(20)
+  opening_hours String?      @db.VarChar(100)
+  is_partner    Boolean?     @default(false)
+  image_url     String?      @db.VarChar(255)
+  rating        Decimal?     @db.Decimal(3, 2)
+  created_at    DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?    @default(now()) @db.Timestamp(0)
+  menu_items    menu_items[]
+  orders        orders[]
+  reviews       reviews[]
+}
+
+model reviews {
+  id            Int          @id @default(autoincrement())
+  user_id       Int?
+  restaurant_id Int?
+  rating        Int
+  comment       String?      @db.Text
+  created_at    DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?    @default(now()) @db.Timestamp(0)
+  users         users?       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "reviews_ibfk_1")
+  restaurants   restaurants? @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "reviews_ibfk_2")
+
+  @@index([restaurant_id], map: "restaurant_id")
+  @@index([user_id], map: "user_id")
+}
+
+model users {
+  id              Int              @id @default(autoincrement())
+  username        String           @unique(map: "username") @db.VarChar(50)
+  email           String           @unique(map: "email") @db.VarChar(100)
+  password        String           @db.VarChar(255)
+  phone_number    String?          @db.VarChar(20)
+  avatar          String?          @db.VarChar(255)
+  latitude        Decimal?         @db.Decimal(10, 8)
+  longitude       Decimal?         @db.Decimal(11, 8)
+  user_type       users_user_type? @default(customer)
+  created_at      DateTime?        @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?        @default(now()) @db.Timestamp(0)
+  addresses       addresses[]
+  driver_info     driver_info?
+  orders          orders[]
+  restaurant_info restaurant_info?
+  reviews         reviews[]
+
+  @@index([latitude, longitude], map: "idx_user_location")
+}
+
+enum orders_status {
+  pending
+  confirmed
+  preparing
+  delivering
+  completed
+  cancelled
+}
+
+enum users_user_type {
+  customer
+  restaurant
+  driver
+  admin
+}
