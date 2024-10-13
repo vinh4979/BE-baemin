@@ -45,4 +45,9 @@ export class CategoriesController {
   async deleteCategory(@Param('id') id: string) {
     return this.categoriesService.deleteCategory(Number(id));
   }
+
+  @Get('restaurant/:id')
+  async getCategoriesByRestaurantId(@Param('id') id: string) {
+    return this.categoriesService.getCategoriesByRestaurantId(Number(id));
+  }
 }

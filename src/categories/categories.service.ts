@@ -51,4 +51,19 @@ export class CategoriesService {
       where: { id },
     });
   }
+
+  async getCategoriesByRestaurantId(restaurantId: number): Promise<Category[]> {
+    const categories = await this.prisma.categories.findMany({
+      where: {
+        menu_items: {
+          some: {
+            restaurant_id: restaurantId
+          }
+        }
+      },
+      distinct: ['id']
+    });
+
+    return categories;
+  }
 }

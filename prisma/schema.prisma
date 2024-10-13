@@ -52,6 +52,7 @@ model menu_items {
   category_id   Int?
   created_at    DateTime?     @default(now()) @db.Timestamp(0)
   updated_at    DateTime?     @default(now()) @db.Timestamp(0)
+  cart_items    cart_items[]
   restaurants   restaurants?  @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "menu_items_ibfk_1")
   categories    categories?   @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "menu_items_ibfk_2")
   order_items   order_items[]
@@ -148,12 +149,27 @@ model users {
   created_at      DateTime?        @default(now()) @db.Timestamp(0)
   updated_at      DateTime?        @default(now()) @db.Timestamp(0)
   addresses       addresses[]
+  cart_items      cart_items[]
   driver_info     driver_info?
   orders          orders[]
   restaurant_info restaurant_info?
   reviews         reviews[]
 
   @@index([latitude, longitude], map: "idx_user_location")
+}
+
+model cart_items {
+  id           Int        @id @default(autoincrement())
+  user_id      Int
+  menu_item_id Int
+  quantity     Int        @default(1)
+  created_at   DateTime?  @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?  @default(now()) @db.Timestamp(0)
+  users        users      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cart_items_ibfk_1")
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cart_items_ibfk_2")
+
+  @@index([menu_item_id], map: "menu_item_id")
+  @@index([user_id], map: "user_id")
 }
 
 enum orders_status {

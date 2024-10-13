@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Put, Param, Body, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiConsumes, ApiBody, ApiParam } from '@nestjs/swagger';
 import { Restaurant } from './entities/restaurant.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../ultils/multer-config';
@@ -31,5 +31,13 @@ export class RestaurantsController {
     @UploadedFile() file: Express.Multer.File
   ): Promise<Restaurant> {
     return this.restaurantsService.updateRestaurant(+id, updateRestaurantDto, file);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Lấy thông tin nhà hàng theo mã' })
+  @ApiParam({ name: 'id', required: true, description: 'ID của nhà hàng' })
+  @ApiResponse({ status: 200, description: 'Thông tin nhà hàng', type: Restaurant })
+  async getRestaurantById(@Param('id') id: string): Promise<Restaurant> {
+    return this.restaurantsService.getRestaurantById(+id);
   }
 }

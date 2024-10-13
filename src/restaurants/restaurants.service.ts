@@ -62,4 +62,16 @@ export class RestaurantsService {
       data: updateData,
     });
   }
+
+  async getRestaurantById(id: number): Promise<Restaurant> {
+    const restaurant = await this.prisma.restaurants.findUnique({
+      where: { id: id },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException(`Restaurant with ID ${id} not found`);
+    }
+
+    return restaurant;
+  }
 }

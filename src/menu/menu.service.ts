@@ -19,4 +19,15 @@ export class MenuService {
       },
     });
   }
+
+  async getMenuItemsByRestaurantId(restaurantId: number): Promise<MenuItem[]> {
+    return this.prisma.menu_items.findMany({
+      where: {
+        restaurant_id: restaurantId
+      },
+      include: {
+        categories: true
+      }
+    });
+  }
 }
